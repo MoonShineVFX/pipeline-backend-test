@@ -1,0 +1,20 @@
+name: Deploy to Cloud Run
+on:
+  push:
+    branches:
+      - main
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout repo
+        uses: actions/checkout@v2
+      - name: Deploy to Cloud Run
+        uses: google-github-actions/deploy-cloudrun@v0.2.0
+        with:
+          service: pipeline-backend-test
+          source: .
+          region: asia-east1
+          credentials: ${{ secrets.GCP_SA_KEY }}
+          env_vars: DB_USER=${{ secrets.DB_USER }},DB_PASS=${{ secrets.DB_PASS }},DB_NAME=${{ secrets.DB_NAME }},CLOUD_SQL_CONNECTION_NAME=${{ secrets.SQL_CON }}

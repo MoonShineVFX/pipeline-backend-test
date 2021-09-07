@@ -1,0 +1,5 @@
+Flask==2.0.1
+gunicorn==20.1.0
+google-cloud-storage==1.42.0
+SQLAlchemy==1.4.23
+PyMySQL==1.0.2
