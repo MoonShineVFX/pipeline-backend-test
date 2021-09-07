@@ -1,4 +1,5 @@
 import os
+
 from flask import Flask, request, Blueprint, redirect
 from google.cloud import storage
 from datetime import datetime, timedelta
@@ -15,21 +16,16 @@ def sql():
     db_user = os.environ["DB_USER"]
     db_pass = os.environ["DB_PASS"]
     db_name = os.environ["DB_NAME"]
-    db_socket_dir = os.environ.get("DB_SOCKET_DIR", "/cloudsql")
     cloud_sql_connection_name = os.environ["CLOUD_SQL_CONNECTION_NAME"]
 
     db = sqlalchemy.create_engine(
-        # Equivalent URL:
-        # mysql+pymysql://<db_user>:<db_pass>@/<db_name>?unix_socket=<socket_path>/<cloud_sql_instance_name>
         sqlalchemy.engine.url.URL.create(
             drivername="mysql+pymysql",
             username=db_user,  # e.g. "my-database-user"
             password=db_pass,  # e.g. "my-database-password"
             database=db_name,  # e.g. "my-database-name"
             query={
-                "unix_socket": "{}/{}".format(
-                    db_socket_dir,  # e.g. "/cloudsql"
-                    cloud_sql_connection_name)  # i.e "<PROJECT-NAME>:<INSTANCE-REGION>:<INSTANCE-NAME>"
+                "unix_socket": f'/cloudsql/{cloud_sql_connection_name}'
             }
         ),
         pool_size=5,
@@ -79,16 +75,19 @@ def get_file(path):
         return 'Object not found', 400
 
     # Auth for signed url
-    import google.auth
-    credentials, project_id = google.auth.default()
-    from google.auth.transport import requests
-    r = requests.Request()
-    credentials.refresh(r)
-    service_account_email = credentials.service_account_email
+    # import google.auth
+    # credentials, project_id = google.auth.default()
+    # from google.auth.transport import requests
+    # r = requests.Request()
+    # credentials.refresh(r)
+    # service_account_email = credentials.service_account_email
 
     expires = datetime.now() + timedelta(minutes=10)
+    # signed_url = blob.generate_signed_url(
+    #     expiration=expires, service_account_email=service_account_email, access_token=credentials.token
+    # )
     signed_url = blob.generate_signed_url(
-        expiration=expires, service_account_email=service_account_email, access_token=credentials.token
+        expiration=expires
     )
     return redirect(signed_url)
 
